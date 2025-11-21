@@ -78,6 +78,18 @@ service cloud.firestore {
     // ----------------------------------------------------------------------
 
     /**
+     * @description Secures the application-wide configuration documents.
+     * @path /config/{configId}
+     * @allow Any signed-in user can read configuration (e.g., feature flags).
+     * @deny No user can write, update, or delete configurations from the client.
+     * @principle Allows client-side code to adapt to centrally managed settings.
+     */
+    match /config/{configId} {
+      allow get, list: if isSignedIn();
+      allow write: if false;
+    }
+
+    /**
      * @description Secures a user's own profile document.
      * @path /users/{userId}
      * @allow A signed-in user (uid: 'user123') can (create) their own document at /users/user123.
