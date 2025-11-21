@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clapperboard, LogOut, Settings } from "lucide-react";
+import { Clapperboard, LogOut, Settings, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/firebase";
+import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,15 @@ import ChangePasswordForm from "./change-password-form";
 export default function Header() {
   const router = useRouter();
   const auth = useAuth();
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const videosCollectionRef = useMemoFirebase(() =>
+    user ? collection(firestore, 'users', user.uid, 'videos') : null
+  , [firestore, user]);
+
+  const { data: videos, isLoading: isLoadingVideos } = useCollection(videosCollectionRef);
+
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -27,12 +37,22 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <div className="mr-4 hidden md:flex">
+        <div className="mr-4 hidden items-center md:flex">
           <Link href="/dashboard" className="flex items-center gap-2">
             <Clapperboard className="h-6 w-6 text-primary" />
             <span className="font-bold font-headline text-lg">WatchTrack</span>
           </Link>
         </div>
+        
+        {user && !isLoadingVideos && videos && videos.length > 0 && (
+            <div className="hidden items-center gap-3 border-l pl-4 md:flex">
+                <Film className="h-6 w-6 text-primary" />
+                <h2 className="font-headline text-lg font-semibold">我的影片清單</h2>
+                <span className="text-lg font-bold text-primary">{videos.length}</span>
+                <span className="text-sm text-muted-foreground">個影片</span>
+            </div>
+        )}
+
         <div className="flex flex-1 items-center justify-end space-x-2">
           <Dialog>
             <DialogTrigger asChild>

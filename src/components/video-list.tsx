@@ -1,10 +1,25 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { VideoProgress } from "@/lib/types";
 import VideoCard from "./video-card";
 import { Input } from "./ui/input";
-import { Search, Video } from "lucide-react";
+import { Search, Video, Loader2, Trash2 } from "lucide-react";
+import { useDoc, useFirestore } from "@/firebase";
+import { doc, writeBatch } from "firebase/firestore";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "./ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 type VideoListProps = {
   videos: VideoProgress[];
@@ -14,6 +29,16 @@ type VideoListProps = {
 
 export default function VideoList({ videos, onUpdateVideo, onDeleteVideo }: VideoListProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
+
+  // Firestore reference for the feature flag
+  const featureConfigRef = useMemo(() =>
+    firestore ? doc(firestore, 'config', 'features') : null
+  , [firestore]);
+  const { data: featureConfig, isLoading: isLoadingFeatures } = useDoc(featureConfigRef);
+  const isDeleteAllEnabled = featureConfig?.isDeleteAllEnabled === true;
 
   const filteredVideos = useMemo(() => {
     return videos
@@ -23,12 +48,41 @@ export default function VideoList({ videos, onUpdateVideo, onDeleteVideo }: Vide
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [videos, searchTerm]);
 
+  const handleDeleteAllVideos = async () => {
+    if (!firestore || !videos.length) return;
+    const user = videos[0].userId;
+    if (!user) return;
+
+    setIsDeletingAll(true);
+    try {
+      const batch = writeBatch(firestore);
+      videos.forEach((video) => {
+        const videoRef = doc(firestore, 'users', user, 'videos', video.id);
+        batch.delete(videoRef);
+      });
+      await batch.commit();
+      toast({
+        title: "成功！",
+        description: "您的所有影片進度都已刪除。",
+      });
+    } catch (error) {
+      console.error("Error deleting all videos: ", error);
+      toast({
+        variant: "destructive",
+        title: "發生錯誤",
+        description: "刪除所有影片時發生問題，請稍後再試。",
+      });
+    } finally {
+      setIsDeletingAll(false);
+    }
+  };
+
+
   return (
     <div className="space-y-6">
       {videos.length > 0 && (
-        <div className="space-y-2 rounded-lg border bg-card p-4">
-          <h3 className="font-headline text-lg font-medium">搜尋您的片單</h3>
-          <div className="relative">
+        <div className="flex items-center gap-4">
+          <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="搜尋影片名稱..."
@@ -37,6 +91,35 @@ export default function VideoList({ videos, onUpdateVideo, onDeleteVideo }: Vide
               className="pl-10 w-full"
             />
           </div>
+           {isDeleteAllEnabled && !isLoadingFeatures && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" disabled={isDeletingAll}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  <span>刪除全部</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>您確定要刪除所有進度嗎？</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    這個操作將會永久刪除您所有的影片追蹤記錄，而且無法復原。您確定要繼續嗎？
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>取消</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteAllVideos}
+                    disabled={isDeletingAll}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {isDeletingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    確定刪除
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
       )}
 
