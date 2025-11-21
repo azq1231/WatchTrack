@@ -114,9 +114,8 @@ service cloud.firestore {
      * @principle Enforces strict data ownership within a user-specific subcollection.
      */
     match /users/{userId}/videos/{videoId} {
-      // TEMPORARY RULE FOR MIGRATION: Allow any signed-in user to read/write to any videos subcollection.
-      // This should be reverted after migration is complete.
-      allow read, write: if isSignedIn();
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && (isCreatingOwnVideo(userId) || isUpdatingOwnVideo());
     }
   }
 }

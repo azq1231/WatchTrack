@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import ChangePasswordForm from "./change-password-form";
+import AccountSettings from "./account-settings";
 
 export default function Header() {
   const router = useRouter();
@@ -44,7 +44,7 @@ export default function Header() {
           </Link>
         </div>
         
-        {user && !isLoadingVideos && videos && videos.length > 0 && (
+        {user && !isLoadingVideos && videos && (
             <div className="flex items-center gap-3 border-l pl-4">
                 <Film className="h-6 w-6 text-primary" />
                 <h2 className="font-headline text-lg font-semibold hidden md:inline-block">我的影片清單</h2>
@@ -64,14 +64,14 @@ export default function Header() {
                 <Settings className="h-5 w-5" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[480px]">
               <DialogHeader>
                 <DialogTitle>帳號設定</DialogTitle>
                 <DialogDescription>
-                  在這裡變更您的密碼。
+                  管理您的帳號資訊、密碼與資料。
                 </DialogDescription>
               </DialogHeader>
-              <ChangePasswordForm />
+              <AccountSettings videos={videos || []} />
             </DialogContent>
           </Dialog>
 
