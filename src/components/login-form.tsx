@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -66,7 +67,7 @@ export default function LoginForm() {
       router.push("/dashboard");
     } catch (signInError) {
       // If the user does not exist, create a new one.
-      if ((signInError as AuthError).code === AuthErrorCodes.USER_DELETED) {
+      if ((signInError as AuthError).code === AuthErrorCodes.USER_NOT_FOUND) {
          try {
            await createUserWithEmailAndPassword(auth, email, DEV_PASSWORD);
            router.push("/dashboard");
