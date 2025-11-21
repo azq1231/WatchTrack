@@ -29,6 +29,7 @@ export default function Header() {
 
   const { data: videos, isLoading: isLoadingVideos } = useCollection(videosCollectionRef);
 
+  const userPhoneNumber = user?.email?.split('@')[0] ?? '';
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -49,7 +50,7 @@ export default function Header() {
             <div className="flex items-center gap-2 border-l pl-3 sm:pl-4">
                 <Film className="h-5 w-5 text-primary sm:h-6 sm:w-6" />
                 <div className="flex items-baseline gap-2">
-                  <h2 className="font-headline text-md sm:text-lg font-semibold hidden md:inline-block">我的影片清單</h2>
+                  <h2 className="font-headline text-md sm:text-lg font-semibold hidden md:inline-block">{userPhoneNumber}的清單</h2>
                   <span className="text-lg sm:text-xl font-bold text-primary">{videos.length}</span>
                   <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline-block">個影片</span>
                 </div>
@@ -74,7 +75,7 @@ export default function Header() {
                   管理您的帳號資訊、密碼與資料。
                 </DialogDescription>
               </DialogHeader>
-              <ScrollArea className="py-4 pr-6 max-h-[70vh]">
+              <ScrollArea className="max-h-[80vh] overflow-y-auto py-4 pr-4">
                 <AccountSettings videos={videos || []} />
               </ScrollArea>
             </DialogContent>
