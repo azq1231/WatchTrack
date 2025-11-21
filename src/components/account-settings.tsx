@@ -16,12 +16,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useUser, useFirestore } from "@/firebase";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { updatePassword, AuthError } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "./ui/separator";
 import type { VideoProgress } from "@/lib/types";
-import { collection, writeBatch, query, where, getDocs, doc, serverTimestamp } from "firebase/firestore";
+import { collection, writeBatch, doc, serverTimestamp } from "firebase/firestore";
 
 const passwordFormSchema = z.object({
     newPassword: z.string().min(6, "新密碼至少需要6個字元。"),
@@ -129,42 +129,35 @@ export default function AccountSettings({ videos }: AccountSettingsProps) {
             const batch = writeBatch(firestore);
             const userVideosRef = collection(firestore, 'users', user.uid, 'videos');
             
-            let updateCount = 0;
-            let addCount = 0;
+            let importCount = 0;
 
             for (const item of importedData) {
+                // Basic validation for the imported item
                 if (typeof item.name !== 'string' || typeof item.episode !== 'number') {
                     console.warn("略過格式不符的項目:", item);
                     continue;
                 }
-                const q = query(userVideosRef, where("name", "==", item.name));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    const docToUpdate = querySnapshot.docs[0].ref;
-                    batch.update(docToUpdate, { episode: item.episode });
-                    updateCount++;
-                } else {
-                    const newDocRef = doc(userVideosRef);
-                    batch.set(newDocRef, { ...item, userId: user.uid, createdAt: serverTimestamp() });
-                    addCount++;
-                }
+                
+                const newDocRef = doc(userVideosRef); // Create a new document reference for each item
+                batch.set(newDocRef, { ...item, userId: user.uid, createdAt: serverTimestamp() });
+                importCount++;
             }
             
             await batch.commit();
 
             toast({
                 title: "匯入成功！",
-                description: `新增了 ${addCount} 筆，更新了 ${updateCount} 筆影片進度。頁面將會自動重新整理。`,
+                description: `成功匯入了 ${importCount} 筆影片進度。頁面將會自動重新整理。`,
             });
-            window.location.reload();
+            // Use a short delay before reloading to allow the user to read the toast.
+            setTimeout(() => window.location.reload(), 1500);
 
         } catch (error: any) {
             console.error("Import failed:", error);
             toast({
                 variant: "destructive",
                 title: "匯入失敗",
-                description: error.message || "處理檔案時發生錯誤。",
+                description: error.message || "處理檔案時發生錯誤。請確認檔案格式正確，並在匯入前清空現有資料。",
             });
         } finally {
             setIsImporting(false);
@@ -178,13 +171,13 @@ export default function AccountSettings({ videos }: AccountSettingsProps) {
 
 
   return (
-    <div className="grid gap-6">
+    <div className="space-y-4">
         {/* Data Management Section */}
         <div className="space-y-4">
             <h4 className="font-medium">資料管理</h4>
              <div className="p-4 border rounded-lg space-y-4">
                 <p className="text-sm text-muted-foreground">
-                    您可以將所有影片進度匯出成一個JSON檔案作為備份，或是在新帳號中匯入。
+                    您可以將所有影片進度匯出成一個JSON檔案作為備份，或是在新帳號中匯入。匯入前請先刪除新帳號的所有資料以避免重複。
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                     <Button onClick={handleExport} variant="outline" className="w-full sm:w-auto">
