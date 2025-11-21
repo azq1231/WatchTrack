@@ -19,9 +19,9 @@ export default function LoginPage() {
         />
       )}
       <LoginForm />
-      <div className="mt-4 text-center text-sm text-gray-300">
+      <div className="mt-4 text-center text-sm text-black">
         還沒有帳號嗎？{' '}
-        <Link href="/signup" className="underline text-white hover:text-gray-200">
+        <Link href="/signup" className="underline hover:text-gray-700">
           註冊
         </Link>
       </div>
