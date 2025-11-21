@@ -25,15 +25,21 @@ export default function VideoList({ videos, onUpdateVideo, onDeleteVideo }: Vide
 
   return (
     <div className="space-y-6">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="搜尋您的影片..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 w-full"
-        />
-      </div>
+      {videos.length > 0 && (
+        <div className="space-y-2 rounded-lg border bg-card p-4">
+          <h3 className="font-headline text-lg font-medium">搜尋您的片單</h3>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="搜尋影片名稱..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-full"
+            />
+          </div>
+        </div>
+      )}
+
 
       {videos.length === 0 && (
         <div className="text-center py-10 border-2 border-dashed rounded-lg">
