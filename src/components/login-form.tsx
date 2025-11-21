@@ -32,7 +32,7 @@ import {
 } from "firebase/auth";
 
 const formSchema = z.object({
-  phone: z.string().min(10, "請輸入有效的手機號碼。"),
+  phone: z.string().min(1, "請輸入您的手機號碼。"),
   password: z.string().min(6, "密碼至少需要6個字元。"),
 });
 
@@ -62,8 +62,9 @@ export default function LoginForm() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     setError(null);
-    const normalizedPhone = values.phone.replace(/\D/g, "");
-    const email = `${normalizedPhone}@${EMAIL_DOMAIN}`;
+    // TEMPORARILY REMOVED: Normalization is disabled to allow login to old account.
+    // const normalizedPhone = values.phone.replace(/\D/g, "");
+    const email = `${values.phone}@${EMAIL_DOMAIN}`;
 
     try {
       await signInWithEmailAndPassword(auth, email, values.password);
