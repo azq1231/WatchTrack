@@ -1,59 +1,86 @@
 "use client";
 
-import { useState } from "react";
-import type { VideoProgress } from "@/lib/types";
+import { useMemo } from "react";
 import VideoEntryForm from "@/components/video-entry-form";
 import VideoList from "@/components/video-list";
-import { useToast } from "@/hooks/use-toast";
-
-const initialVideos: VideoProgress[] = [
-    { id: '1', name: 'Stranger Things', episode: 8 },
-    { id: '2', name: 'The Witcher', episode: 4 },
-    { id: '3', name: 'Arcane', episode: 9 },
-    { id: '4', name: 'Breaking Bad', episode: 62 },
-];
-
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where, writeBatch } from "firebase/firestore";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
-  const [videos, setVideos] = useState<VideoProgress[]>(initialVideos);
-  const { toast } = useToast();
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+  const router = useRouter();
 
-  const handleAddVideo = (name: string, episode: number) => {
-    const existingVideo = videos.find(v => v.name.toLowerCase() === name.toLowerCase());
-    
+  const videosCollectionRef = useMemoFirebase(() =>
+    user ? collection(firestore, 'users', user.uid, 'videos') : null
+  , [firestore, user]);
+
+  const { data: videos, isLoading: isLoadingVideos } = useCollection(videosCollectionRef);
+
+  const handleAddVideo = async (name: string, episode: number) => {
+    if (!user || !videosCollectionRef) return;
+
+    // Check if video with the same name already exists
+    const existingVideo = videos?.find(v => v.name.toLowerCase() === name.toLowerCase());
+
     if (existingVideo) {
       handleUpdateVideo(existingVideo.id, { episode });
     } else {
-      const newVideo: VideoProgress = {
-        id: crypto.randomUUID(),
+       await addDoc(videosCollectionRef, {
         name,
         episode,
-      };
-      setVideos((prev) => [newVideo, ...prev]);
+        userId: user.uid,
+        createdAt: serverTimestamp()
+      });
     }
   };
 
-  const handleUpdateVideo = (id: string, updates: Partial<VideoProgress>) => {
-    setVideos((prev) =>
-      prev.map((video) =>
-        video.id === id ? { ...video, ...updates } : video
-      )
-    );
+  const handleUpdateVideo = async (id: string, updates: { episode: number }) => {
+    if (!user) return;
+    const videoDocRef = doc(firestore, 'users', user.uid, 'videos', id);
+    await updateDoc(videoDocRef, updates);
   };
 
-  const handleDeleteVideo = (id: string) => {
-    setVideos((prev) => prev.filter((video) => video.id !== id));
+  const handleDeleteVideo = async (id: string) => {
+    if (!user) return;
+    const videoDocRef = doc(firestore, 'users', user.uid, 'videos', id);
+    await deleteDoc(videoDocRef);
   };
+  
+  if (isUserLoading) {
+    return (
+        <div className="flex h-screen items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
+
+  if (!user) {
+    router.replace('/');
+    return (
+        <div className="flex h-screen items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
       <div className="mx-auto flex max-w-3xl flex-col gap-8">
         <VideoEntryForm onAddVideo={handleAddVideo} />
-        <VideoList
-          videos={videos}
-          onUpdateVideo={handleUpdateVideo}
-          onDeleteVideo={handleDeleteVideo}
-        />
+        {isLoadingVideos ? (
+            <div className="flex justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        ) : (
+            <VideoList
+              videos={videos || []}
+              onUpdateVideo={handleUpdateVideo}
+              onDeleteVideo={handleDeleteVideo}
+            />
+        )}
       </div>
     </div>
   );

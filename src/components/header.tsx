@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Clapperboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/firebase";
 
 export default function Header() {
   const router = useRouter();
+  const auth = useAuth();
 
-  const handleLogout = () => {
-    // In a real app, you'd clear session/token here
+  const handleLogout = async () => {
+    await auth.signOut();
     router.push("/");
   };
 

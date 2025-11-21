@@ -25,6 +25,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useAuth, useUser } from "@/firebase";
+import { signInAnonymously } from "firebase/auth";
 
 const formSchema = z.object({
   phone: z.string().min(10, "請輸入有效的手機號碼。"),
@@ -33,6 +35,8 @@ const formSchema = z.object({
 export default function LoginForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,15 +45,38 @@ export default function LoginForm() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
-    // Simulate API call and validation
-    setTimeout(() => {
-      // For this demo, we'll always succeed.
-      console.log("Login successful with phone:", values.phone);
+    try {
+      // In a real app, you might want to associate the phone number
+      // with the anonymous user profile, but for now, we just sign in.
+      if (!user) {
+        await signInAnonymously(auth);
+      }
       router.push("/dashboard");
-    }, 1500);
+    } catch (error) {
+      console.error("Login failed", error);
+      // You could show a toast message here
+      setIsSubmitting(false);
+    }
   };
+  
+  if (isUserLoading) {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
+
+  if (user) {
+      router.push('/dashboard');
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      );
+  }
 
   return (
     <Card className="w-full max-w-sm bg-card/80 backdrop-blur-sm animate-in fade-in-0 zoom-in-95">
