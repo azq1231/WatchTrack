@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import AccountSettings from "./account-settings";
+import { ScrollArea } from "./ui/scroll-area";
 
 export default function Header() {
   const router = useRouter();
@@ -45,11 +46,13 @@ export default function Header() {
         </div>
         
         {user && !isLoadingVideos && videos && (
-            <div className="flex items-center gap-3 border-l pl-4">
-                <Film className="h-6 w-6 text-primary" />
-                <h2 className="font-headline text-lg font-semibold hidden md:inline-block">我的影片清單</h2>
-                <span className="text-lg font-bold text-primary">{videos.length}</span>
-                <span className="text-sm text-muted-foreground hidden md:inline-block">個影片</span>
+            <div className="flex items-center gap-2 border-l pl-3 sm:pl-4">
+                <Film className="h-5 w-5 text-primary sm:h-6 sm:w-6" />
+                <div className="flex items-baseline gap-2">
+                  <h2 className="font-headline text-md sm:text-lg font-semibold hidden md:inline-block">我的影片清單</h2>
+                  <span className="text-lg sm:text-xl font-bold text-primary">{videos.length}</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline-block">個影片</span>
+                </div>
             </div>
         )}
 
@@ -64,14 +67,16 @@ export default function Header() {
                 <Settings className="h-5 w-5" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[480px]">
+            <DialogContent className="sm:max-w-[480px] grid-rows-[auto_minmax(0,1fr)] max-h-[90vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>帳號設定</DialogTitle>
                 <DialogDescription>
                   管理您的帳號資訊、密碼與資料。
                 </DialogDescription>
               </DialogHeader>
-              <AccountSettings videos={videos || []} />
+              <ScrollArea className="pr-6 -mr-6">
+                <AccountSettings videos={videos || []} />
+              </ScrollArea>
             </DialogContent>
           </Dialog>
 
