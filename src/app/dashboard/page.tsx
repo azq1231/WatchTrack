@@ -4,12 +4,19 @@ import { useMemo, useState } from "react";
 import VideoEntryForm from "@/components/video-entry-form";
 import VideoList from "@/components/video-list";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc } from "firebase/firestore";
+import { collection, doc, serverTimestamp, writeBatch, setDoc, query, where, getDocs, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
 import { Loader2, Import } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { seedData } from "@/lib/seed-data";
+import {
+  setDocumentNonBlocking,
+  addDocumentNonBlocking,
+  updateDocumentNonBlocking,
+  deleteDocumentNonBlocking,
+} from '@/firebase';
+
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -24,51 +31,57 @@ export default function DashboardPage() {
 
   const { data: videos, isLoading: isLoadingVideos } = useCollection(videosCollectionRef);
 
-  const ensureUserDocument = async () => {
+  const ensureUserDocument = () => {
     if (!user || !firestore) return;
     const userDocRef = doc(firestore, "users", user.uid);
-    // This will create the document if it doesn't exist, or do nothing if it does.
-    // It's a non-destructive way to ensure the user document is in place.
-    await setDoc(userDocRef, { id: user.uid, email: user.email }, { merge: true });
+    setDocumentNonBlocking(userDocRef, { id: user.uid, email: user.email }, { merge: true });
   };
 
   const handleAddVideo = async (name: string, episode: number) => {
-    if (!user || !videosCollectionRef) return;
+    if (!user || !firestore || !videosCollectionRef) return;
     
-    await ensureUserDocument();
+    ensureUserDocument();
 
-    const existingVideo = videos?.find(v => v.name.toLowerCase() === name.toLowerCase());
+    const q = query(videosCollectionRef, where("name", "==", name));
 
-    if (existingVideo) {
-      handleUpdateVideo(existingVideo.id, { episode });
-    } else {
-       await addDoc(videosCollectionRef, {
-        name,
-        episode,
-        userId: user.uid,
-        createdAt: serverTimestamp()
-      });
+    try {
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+            // Update existing video
+            const videoDoc = querySnapshot.docs[0];
+            handleUpdateVideo(videoDoc.id, { episode });
+        } else {
+            // Add new video
+            addDocumentNonBlocking(videosCollectionRef, {
+                name,
+                episode,
+                userId: user.uid,
+                createdAt: serverTimestamp()
+            });
+        }
+    } catch (error) {
+        console.error("Error handling video:", error);
     }
   };
 
-  const handleUpdateVideo = async (id: string, updates: { episode: number }) => {
-    if (!user) return;
+  const handleUpdateVideo = (id: string, updates: { episode: number }) => {
+    if (!user || !firestore) return;
     const videoDocRef = doc(firestore, 'users', user.uid, 'videos', id);
-    await updateDoc(videoDocRef, updates);
+    updateDocumentNonBlocking(videoDocRef, updates);
   };
 
-  const handleDeleteVideo = async (id: string) => {
-    if (!user) return;
+  const handleDeleteVideo = (id: string) => {
+    if (!user || !firestore) return;
     const videoDocRef = doc(firestore, 'users', user.uid, 'videos', id);
-    await deleteDoc(videoDocRef);
+    deleteDocumentNonBlocking(videoDocRef);
   };
   
   const handleImportSeedData = async () => {
     if (!user || !firestore || !videosCollectionRef) return;
 
     setIsImporting(true);
+    ensureUserDocument();
     try {
-      await ensureUserDocument();
       const batch = writeBatch(firestore);
       
       seedData.forEach(video => {
