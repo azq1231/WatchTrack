@@ -29,7 +29,6 @@ import { useAuth } from "@/firebase";
 import {
   createUserWithEmailAndPassword,
   AuthError,
-  AuthErrorCodes,
 } from "firebase/auth";
 
 const formSchema = z.object({
@@ -64,9 +63,9 @@ export default function SignupForm() {
     } catch (signUpError) {
       console.error("Sign-up failed:", signUpError);
       const authError = signUpError as AuthError;
-      if (authError.code === AuthErrorCodes.EMAIL_EXISTS) {
+      if (authError.code === 'auth/email-already-in-use') {
         setError("這個手機號碼已經被註冊了。");
-      } else if (authError.code === AuthErrorCodes.WEAK_PASSWORD) {
+      } else if (authError.code === 'auth/weak-password') {
         setError("密碼強度不足，請使用至少6個字元。");
       } else {
         setError("註冊時發生無法預期的錯誤，請稍後再試。");
