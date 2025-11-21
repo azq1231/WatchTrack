@@ -42,7 +42,7 @@ export default function Header() {
         <div className="mr-4 flex items-center">
           <Link href="/dashboard" className="flex items-center gap-2">
             <Clapperboard className="h-6 w-6 text-primary" />
-            <span className="font-bold font-headline text-lg">WatchTrack</span>
+            <span className="hidden font-bold font-headline text-lg sm:inline-block">WatchTrack</span>
           </Link>
         </div>
         
@@ -50,7 +50,7 @@ export default function Header() {
             <div className="flex items-center gap-2 border-l pl-3 sm:pl-4">
                 <Film className="h-5 w-5 text-primary sm:h-6 sm:w-6" />
                 <div className="flex items-baseline gap-2">
-                  <h2 className="font-headline text-md sm:text-lg font-semibold hidden md:inline-block">{userPhoneNumber}的清單</h2>
+                  <h2 className="font-headline text-md sm:text-lg font-semibold">{userPhoneNumber}<span className="hidden md:inline">的清單</span></h2>
                   <span className="text-lg sm:text-xl font-bold text-primary">{videos.length}</span>
                   <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline-block">個影片</span>
                 </div>
