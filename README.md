@@ -1,5 +1,32 @@
-# Firebase Studio
+# WatchTrack
 
-This is a NextJS starter in Firebase Studio.
+這是一個簡潔、高效的網頁應用程式，旨在幫助您輕鬆追蹤您正在觀看的電視節目、戲劇和電影的進度。再也不會忘記您看到哪一集了！
 
-To get started, take a look at src/app/page.tsx.
+## 主要功能
+
+- **使用者驗證**: 使用手機號碼與密碼即可輕鬆註冊與登入。
+- **進度追蹤**: 新增、更新或刪除您正在看的影片。
+- **快速更新**: 透過直觀的「+」和「-」按鈕，一鍵更新集數。
+- **即時搜尋**: 當影片清單變長時，可快速篩選找到您想找的節目。
+- **個人化介面**: 登入後，頁首會顯示您的電話號碼，讓您確認目前所在的帳號。
+- **資料可攜性**:
+  - **匯出**: 您可以將所有的觀看進度匯出成一個 `JSON` 檔案，方便備份。
+  - **匯入**: 在新的帳號中，您可以將之前匯出的 `JSON` 檔案匯入，無痛轉移您的觀看紀錄。
+
+## 技術棧
+
+- **前端框架**: [Next.js](https://nextjs.org/) (使用 App Router)
+- **UI 函式庫**: [React](https://react.dev/)
+- **語言**: [TypeScript](https://www.typescriptlang.org/)
+- **後端與資料庫**: [Firebase](https://firebase.google.com/)
+  - **Firebase Authentication**: 處理使用者登入與註冊。
+  - **Cloud Firestore**: 作為即時資料庫，儲存所有影片追蹤資料。
+- **UI 元件**: [Shadcn/UI](https://ui.shadcn.com/)
+- **CSS 框架**: [Tailwind CSS](https://tailwindcss.com/)
+
+## 如何使用
+
+1.  **註冊帳號**: 使用您的手機號碼和一組密碼建立新帳號。
+2.  **新增影片**: 在主畫面的輸入框中，輸入影片名稱和您目前看到的集數，然後點擊「儲存進度」。
+3.  **更新進度**: 在影片卡片上，使用「+」或「-」按鈕來增加或減少集數。
+4.  **管理資料**: 點擊右上角的「設定」圖示，即可找到「匯入」與「匯出」功能，讓您輕鬆備份與還原您的資料。
