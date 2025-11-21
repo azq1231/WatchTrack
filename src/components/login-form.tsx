@@ -62,9 +62,8 @@ export default function LoginForm() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     setError(null);
-    // TEMPORARILY REMOVED: Normalization is disabled to allow login to old account.
-    // const normalizedPhone = values.phone.replace(/\D/g, "");
-    const email = `${values.phone}@${EMAIL_DOMAIN}`;
+    const normalizedPhone = values.phone.replace(/\D/g, "");
+    const email = `${normalizedPhone}@${EMAIL_DOMAIN}`;
 
     try {
       await signInWithEmailAndPassword(auth, email, values.password);
