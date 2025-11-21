@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/firebase";
-import { updatePassword, AuthError, AuthErrorCodes } from "firebase/auth";
+import { updatePassword, AuthError } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -62,7 +62,7 @@ export default function ChangePasswordForm() {
       const authError = updateError as AuthError;
       // In this specific dev environment, we bypass the "requires-recent-login" error
       // as re-authentication is complex without a proper password flow.
-      if (authError.code === AuthErrorCodes.CREDENTIAL_TOO_OLD_ERROR) {
+      if (authError.code === 'auth/requires-recent-login') {
         toast({
             title: "成功！ (模擬)",
             description: "您的密碼已成功更新。在正式環境中，您可能需要重新登入。",
