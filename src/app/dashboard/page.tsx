@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import VideoEntryForm from "@/components/video-entry-form";
 import VideoList from "@/components/video-list";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
-import { collection, doc, serverTimestamp, query, where, getDocs, writeBatch } from "firebase/firestore";
+import { collection, doc, serverTimestamp, query, where, getDocs, writeBatch, orderBy } from "firebase/firestore";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -28,15 +28,16 @@ export default function DashboardPage() {
   }, [isUserLoading, user, router]);
 
   const videosCollectionRef = useMemoFirebase(() =>
-    user ? collection(firestore, 'users', user.uid, 'videos') : null
+    user ? query(collection(firestore, 'users', user.uid, 'videos'), orderBy('name')) : null
   , [firestore, user]);
 
   const { data: videos, isLoading: isLoadingVideos } = useCollection(videosCollectionRef);
 
   const handleAddVideo = async (name: string, episode: number) => {
-    if (!user || !firestore || !videosCollectionRef) return;
+    if (!user || !firestore) return;
     
-    const q = query(videosCollectionRef, where("name", "==", name));
+    const plainCollectionRef = collection(firestore, 'users', user.uid, 'videos');
+    const q = query(plainCollectionRef, where("name", "==", name));
 
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
@@ -45,7 +46,7 @@ export default function DashboardPage() {
         handleUpdateVideo(videoDoc.id, { episode });
     } else {
         // Add new video
-        addDocumentNonBlocking(videosCollectionRef, {
+        addDocumentNonBlocking(plainCollectionRef, {
             name,
             episode,
             userId: user.uid,
