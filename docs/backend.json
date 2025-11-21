@@ -70,7 +70,7 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profile information. Uses path-based ownership for private user data.",
+          "description": "Stores user profile information. A user's document may not exist until they create their first video, but read/write operations to the videos subcollection are still secure.",
           "params": [
             {
               "name": "userId",
@@ -86,7 +86,7 @@
           "schema": {
             "$ref": "#/backend/entities/Video"
           },
-          "description": "Stores video tracking information for each user.  Path-based ownership ensures only the user can access their own video data.",
+          "description": "Stores video tracking information for each user. Path-based ownership ensures only the user can access their own video data.",
           "params": [
             {
               "name": "userId",
@@ -100,6 +100,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to be secure, scalable, and easily debuggable, following the core design principles and strategy mandates. It avoids hierarchical authorization dependencies to ensure atomic operations and clear intent.  The structure uses path-based ownership for user-owned data (videos) and leverages structural segregation by placing all video documents within user-specific collections. Authorization Independence is achieved naturally through the path structure itself (`/users/{userId}/videos/{videoId}`), as rules can simply check if `request.auth.uid == userId`. This eliminates the need for `get()` calls in security rules, thus enabling atomic creation of documents. The `list` operation is secured because users can only list videos within their own user ID space (QAPs). Ownership is implicitly enforced by the collection structure. Timestamps and denormalized data are not applicable in this scenario but could be added to the Video entity if needed in the future. This architecture guarantees a homogenous security posture and maintains clarity and predictability in data access."
+    "reasoning": "The Firestore structure is designed to be secure and scalable. It uses path-based ownership for user-owned data (videos), where a user's data is stored under their unique user ID (`/users/{userId}`). This structural segregation naturally enforces privacy and security. The critical insight is that we *do not* need to check for the existence of the parent user document (`/users/{userId}`) when a user performs actions on their own `videos` subcollection. The security rules for `/users/{userId}/videos/{videoId}` only need to verify that `request.auth.uid == userId`. This allows a user to be created via Firebase Authentication and immediately start writing to their own subcollection without a preliminary write to create their user document, thus avoiding race conditions and permission errors for newly-created users. This 'lazy' creation of the user document is more robust. The `User` entity itself is still defined for clarity and can be created or updated by the user at any time."
   }
 }

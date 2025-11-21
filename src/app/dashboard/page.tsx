@@ -4,14 +4,13 @@ import { useMemo, useState } from "react";
 import VideoEntryForm from "@/components/video-entry-form";
 import VideoList from "@/components/video-list";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, doc, serverTimestamp, writeBatch, setDoc, query, where, getDocs, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
+import { collection, doc, serverTimestamp, writeBatch, query, where, getDocs } from "firebase/firestore";
 import { Loader2, Import } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { seedData } from "@/lib/seed-data";
 import {
-  setDocumentNonBlocking,
   addDocumentNonBlocking,
   updateDocumentNonBlocking,
   deleteDocumentNonBlocking,
@@ -31,17 +30,9 @@ export default function DashboardPage() {
 
   const { data: videos, isLoading: isLoadingVideos } = useCollection(videosCollectionRef);
 
-  const ensureUserDocument = () => {
-    if (!user || !firestore) return;
-    const userDocRef = doc(firestore, "users", user.uid);
-    setDocumentNonBlocking(userDocRef, { id: user.uid, email: user.email }, { merge: true });
-  };
-
   const handleAddVideo = async (name: string, episode: number) => {
     if (!user || !firestore || !videosCollectionRef) return;
     
-    ensureUserDocument();
-
     const q = query(videosCollectionRef, where("name", "==", name));
 
     try {
@@ -80,7 +71,6 @@ export default function DashboardPage() {
     if (!user || !firestore || !videosCollectionRef) return;
 
     setIsImporting(true);
-    ensureUserDocument();
     try {
       const batch = writeBatch(firestore);
       

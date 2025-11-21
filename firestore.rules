@@ -20,7 +20,7 @@
  *   document path. The rules verify that the requesting user's authenticated UID
  *   matches this `{userId}`. This is highly performant as it avoids extra database reads.
  * - Relational Integrity: On document creation, rules enforce that internal ID fields
- *   (e.g., `User.id`, `Video.userId`) correctly match the user ID from the path.
+ *   (e.g., `Video.userId`) correctly match the user ID from the path.
  *   On updates, these IDs are enforced as immutable to prevent re-associating data.
  *
  * Denormalization for Authorization:
@@ -58,30 +58,6 @@ service cloud.firestore {
     }
 
     /**
-     * Checks for ownership on an existing document. Used for update and delete
-     * operations to prevent acting on non-existent data.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-    
-    /**
-     * Validates that a new User document contains an 'id' field that matches
-     * the document's path ID, ensuring relational integrity upon creation.
-     */
-    function isCreatingOwnUserDocument(userId) {
-      // When creating a user document, the incoming data should have an 'id' field that matches the user's UID.
-      return request.resource.data.id == userId;
-    }
-
-    /**
-     * Ensures the 'id' field of a User document cannot be changed after creation.
-     */
-    function isUpdatingOwnUserDocument() {
-      return request.resource.data.id == resource.data.id;
-    }
-
-    /**
      * Validates that a new Video document contains a 'userId' field that
      * matches the owner's path ID, ensuring relational integrity upon creation.
      */
@@ -112,9 +88,9 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow list: if false; // User enumeration is disallowed for privacy.
-      allow create: if isOwner(userId); // Simplified: Allow user to create their own user doc.
-      allow update: if isExistingOwner(userId) && isUpdatingOwnUserDocument();
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
@@ -129,8 +105,8 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId) && isCreatingOwnVideo(userId);
-      allow update: if isExistingOwner(userId) && isUpdatingOwnVideo();
-      allow delete: if isExistingOwner(userId);
+      allow update: if isOwner(userId) && isUpdatingOwnVideo();
+      allow delete: if isOwner(userId);
     }
   }
 }
