@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,6 +54,12 @@ export default function LoginForm() {
     },
   });
 
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.replace('/dashboard');
+    }
+  }, [isUserLoading, user, router]);
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     setError(null);
@@ -61,7 +67,7 @@ export default function LoginForm() {
 
     try {
       await signInWithEmailAndPassword(auth, email, values.password);
-      router.push("/dashboard");
+      // Successful sign-in will be handled by the useEffect hook
     } catch (signInError) {
       console.error("Login failed", signInError);
       const authError = signInError as AuthError;
@@ -74,21 +80,12 @@ export default function LoginForm() {
     }
   };
   
-  if (isUserLoading) {
+  if (isUserLoading || user) {
     return (
         <div className="flex items-center justify-center min-h-screen">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
     );
-  }
-
-  if (user) {
-      router.replace('/dashboard');
-      return (
-        <div className="flex items-center justify-center min-h-screen">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-      );
   }
 
   return (
