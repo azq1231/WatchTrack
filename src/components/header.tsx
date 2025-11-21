@@ -37,7 +37,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <div className="mr-4 hidden items-center md:flex">
+        <div className="mr-4 flex items-center">
           <Link href="/dashboard" className="flex items-center gap-2">
             <Clapperboard className="h-6 w-6 text-primary" />
             <span className="font-bold font-headline text-lg">WatchTrack</span>
@@ -45,11 +45,11 @@ export default function Header() {
         </div>
         
         {user && !isLoadingVideos && videos && videos.length > 0 && (
-            <div className="hidden items-center gap-3 border-l pl-4 md:flex">
+            <div className="flex items-center gap-3 border-l pl-4">
                 <Film className="h-6 w-6 text-primary" />
-                <h2 className="font-headline text-lg font-semibold">我的影片清單</h2>
+                <h2 className="font-headline text-lg font-semibold hidden md:inline-block">我的影片清單</h2>
                 <span className="text-lg font-bold text-primary">{videos.length}</span>
-                <span className="text-sm text-muted-foreground">個影片</span>
+                <span className="text-sm text-muted-foreground hidden md:inline-block">個影片</span>
             </div>
         )}
 
