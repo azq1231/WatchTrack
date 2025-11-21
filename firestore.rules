@@ -1,0 +1,135 @@
+/**
+ * This ruleset enforces a strict, user-centric ownership model for a video tracking application.
+ *
+ * Core Philosophy:
+ * The security model ensures that all user-generated data is private by default.
+ * Users can only create, read, update, or delete their own information. There is no
+ * concept of public data or shared access between users. This provides a strong
+ * security posture, guaranteeing user data privacy.
+ *
+ * Data Structure:
+ * The data is organized hierarchically. Each user has a root document at `/users/{userId}`.
+ * All data specific to that user, such as their tracked videos, is stored in a
+ * subcollection (`/users/{userId}/videos/{videoId}`). This structure makes it simple
+ * to secure an entire tree of a user's data with a single path-based rule.
+ *
+ * Key Security Decisions:
+ * - User Listing Disabled: To protect user privacy and prevent data scraping, it is
+ *   not possible to query or list the top-level `/users` collection.
+ * - Path-Based Security: Ownership is determined by the `{userId}` wildcard in the
+ *   document path. The rules verify that the requesting user's authenticated UID
+ *   matches this `{userId}`. This is highly performant as it avoids extra database reads.
+ * - Relational Integrity: On document creation, rules enforce that internal ID fields
+ *   (e.g., `User.id`, `Video.userId`) correctly match the user ID from the path.
+ *   On updates, these IDs are enforced as immutable to prevent re-associating data.
+ *
+ * Denormalization for Authorization:
+ * The `Video` documents contain a denormalized `userId` field. This allows the rules
+ * to enforce on `create` that a user is correctly associating a new video with their
+ * own ID, preventing them from creating records on behalf of another user. This
+ * check ensures relational integrity without needing cross-document reads.
+ *
+ * Structural Segregation:
+ * The model uses structural segregation by placing private `videos` within a user-specific
+ * subcollection. This is inherently more secure and performant for list operations
+ * than a single top-level `/videos` collection filtered by an owner ID.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ----------------------------------------------------------------------
+    // Helper Functions
+    // ----------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the authenticated user's ID matches the provided userId.
+     * This is the foundation of the ownership model.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks for ownership on an existing document. Used for update and delete
+     * operations to prevent acting on non-existent data.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates that a new User document contains an 'id' field that matches
+     * the document's path ID, ensuring relational integrity upon creation.
+     */
+    function isCreatingOwnUserDocument(userId) {
+      return request.resource.data.id == userId;
+    }
+
+    /**
+     * Ensures the 'id' field of a User document cannot be changed after creation.
+     */
+    function isUpdatingOwnUserDocument() {
+      return request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * Validates that a new Video document contains a 'userId' field that
+     * matches the owner's path ID, ensuring relational integrity upon creation.
+     */
+    function isCreatingOwnVideo(userId) {
+      return request.resource.data.userId == userId;
+    }
+
+    /**
+     * Ensures the 'userId' field of a Video document cannot be changed after creation.
+     */
+    function isUpdatingOwnVideo() {
+      return request.resource.data.userId == resource.data.userId;
+    }
+
+
+    // ----------------------------------------------------------------------
+    // Collection Rules
+    // ----------------------------------------------------------------------
+
+    /**
+     * @description Secures a user's own profile document.
+     * @path /users/{userId}
+     * @allow A signed-in user (uid: 'user123') can (create) their own document at /users/user123.
+     * @deny An anonymous user cannot (get) any user document.
+     * @deny A signed-in user (uid: 'user123') cannot (delete) another user's document at /users/user456.
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isCreatingOwnUserDocument(userId);
+      allow update: if isExistingOwner(userId) && isUpdatingOwnUserDocument();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Secures the video documents owned by a specific user.
+     * @path /users/{userId}/videos/{videoId}
+     * @allow A signed-in user (uid: 'user123') can (list) all documents in the /users/user123/videos collection.
+     * @allow A signed-in user (uid: 'user123') can (create) a new video document in their own subcollection.
+     * @deny A signed-in user (uid: 'user123') cannot (get) a video from /users/user456/videos/video789.
+     * @principle Enforces strict data ownership within a user-specific subcollection.
+     */
+    match /users/{userId}/videos/{videoId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isCreatingOwnVideo(userId);
+      allow update: if isExistingOwner(userId) && isUpdatingOwnVideo();
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}

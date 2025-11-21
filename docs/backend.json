@@ -1,0 +1,102 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the WatchTrack application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The user's phone number used for login."
+        }
+      },
+      "required": [
+        "id",
+        "phoneNumber"
+      ]
+    },
+    "Video": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Video",
+      "type": "object",
+      "description": "Represents a video being tracked by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the video entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Video)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the video."
+        },
+        "currentEpisode": {
+          "type": "number",
+          "description": "The current episode the user is watching.",
+          "format": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "currentEpisode"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. Uses path-based ownership for private user data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/videos/{videoId}",
+        "definition": {
+          "entityName": "Video",
+          "schema": {
+            "$ref": "#/backend/entities/Video"
+          },
+          "description": "Stores video tracking information for each user.  Path-based ownership ensures only the user can access their own video data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (owner of the video)."
+            },
+            {
+              "name": "videoId",
+              "description": "The unique identifier for the video."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to be secure, scalable, and easily debuggable, following the core design principles and strategy mandates. It avoids hierarchical authorization dependencies to ensure atomic operations and clear intent.  The structure uses path-based ownership for user-owned data (videos) and leverages structural segregation by placing all video documents within user-specific collections. Authorization Independence is achieved naturally through the path structure itself (`/users/{userId}/videos/{videoId}`), as rules can simply check if `request.auth.uid == userId`. This eliminates the need for `get()` calls in security rules, thus enabling atomic creation of documents. The `list` operation is secured because users can only list videos within their own user ID space (QAPs). Ownership is implicitly enforced by the collection structure. Timestamps and denormalized data are not applicable in this scenario but could be added to the Video entity if needed in the future. This architecture guarantees a homogenous security posture and maintains clarity and predictability in data access."
+  }
+}
