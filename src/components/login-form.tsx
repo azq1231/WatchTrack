@@ -29,7 +29,6 @@ import { useAuth, useUser } from "@/firebase";
 import {
   signInWithEmailAndPassword,
   AuthError,
-  AuthErrorCodes,
 } from "firebase/auth";
 
 const formSchema = z.object({
@@ -71,7 +70,7 @@ export default function LoginForm() {
     } catch (signInError) {
       console.error("Login failed", signInError);
       const authError = signInError as AuthError;
-      if (authError.code === AuthErrorCodes.INVALID_PASSWORD || authError.code === AuthErrorCodes.USER_NOT_FOUND || authError.code === 'auth/invalid-credential') {
+      if (authError.code === 'auth/invalid-credential') {
         setError("登入失敗，請檢查您的電話號碼和密碼。");
       } else {
         setError("登入時發生無法預期的錯誤，請稍後再試。");
