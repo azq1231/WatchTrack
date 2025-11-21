@@ -45,19 +45,19 @@ export default function VideoCard({ video, onUpdate, onDelete }: VideoCardProps)
         <AlertDialogTrigger asChild>
           <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100">
             <Trash2 className="h-4 w-4 text-destructive" />
-            <span className="sr-only">Delete</span>
+            <span className="sr-only">刪除</span>
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>您確定嗎？</AlertDialogTitle>
             <AlertDialogDescription>
-              This action will permanently delete your progress for "{video.name}". This cannot be undone.
+              此操作將永久刪除您在「{video.name}」的進度。此操作無法復原。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => onDelete(video.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={() => onDelete(video.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">刪除</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -67,7 +67,7 @@ export default function VideoCard({ video, onUpdate, onDelete }: VideoCardProps)
       </CardHeader>
       <CardContent className="flex-grow flex flex-col justify-end">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Current Episode</span>
+          <span className="text-sm text-muted-foreground">目前集數</span>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -77,7 +77,7 @@ export default function VideoCard({ video, onUpdate, onDelete }: VideoCardProps)
               disabled={video.episode === 0}
             >
               <Minus className="h-4 w-4" />
-              <span className="sr-only">Decrement episode</span>
+              <span className="sr-only">減少集數</span>
             </Button>
             <span className="text-2xl font-bold font-mono w-16 text-center tabular-nums">
               {video.episode}
@@ -89,7 +89,7 @@ export default function VideoCard({ video, onUpdate, onDelete }: VideoCardProps)
               onClick={handleIncrement}
             >
               <Plus className="h-4 w-4" />
-              <span className="sr-only">Increment episode</span>
+              <span className="sr-only">增加集數</span>
             </Button>
           </div>
         </div>

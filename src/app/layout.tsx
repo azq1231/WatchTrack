@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'WatchTrack',
-  description: 'Track your video watching progress.',
+  description: '追蹤您的影片觀看進度。',
 };
 
 export default function RootLayout({

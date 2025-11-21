@@ -16,8 +16,8 @@ import {
 import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
-  name: z.string().min(1, "Video name is required."),
-  episode: z.coerce.number().min(0, "Episode must be a non-negative number."),
+  name: z.string().min(1, "影片名稱為必填項。"),
+  episode: z.coerce.number().min(0, "集數必須是非負數。"),
 });
 
 type VideoEntryFormProps = {
@@ -44,7 +44,7 @@ export default function VideoEntryForm({ onAddVideo }: VideoEntryFormProps) {
     <Card>
       <CardHeader>
         <CardTitle className="font-headline text-2xl flex items-center gap-2">
-          <PlusCircle className="h-6 w-6" /> Add or Update Progress
+          <PlusCircle className="h-6 w-6" /> 新增或更新進度
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -60,7 +60,7 @@ export default function VideoEntryForm({ onAddVideo }: VideoEntryFormProps) {
                       <FormControl>
                         <div className="relative">
                           <Film className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input placeholder="Video Name" {...field} className="pl-10" />
+                          <Input placeholder="影片名稱" {...field} className="pl-10" />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -77,7 +77,7 @@ export default function VideoEntryForm({ onAddVideo }: VideoEntryFormProps) {
                       <FormControl>
                          <div className="relative">
                           <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input type="number" placeholder="Episode" {...field} className="pl-10" />
+                          <Input type="number" placeholder="集數" {...field} className="pl-10" />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -92,7 +92,7 @@ export default function VideoEntryForm({ onAddVideo }: VideoEntryFormProps) {
               ) : (
                 <PlusCircle className="mr-2 h-4 w-4" />
               )}
-              Save Progress
+              儲存進度
             </Button>
           </form>
         </Form>

@@ -27,7 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
-  phone: z.string().min(10, "Please enter a valid phone number."),
+  phone: z.string().min(10, "請輸入有效的手機號碼。"),
 });
 
 export default function LoginForm() {
@@ -58,7 +58,7 @@ export default function LoginForm() {
             <Clapperboard className="h-8 w-8 text-primary" />
             <CardTitle className="font-headline text-3xl">WatchTrack</CardTitle>
         </div>
-        <CardDescription>Log in to track your shows</CardDescription>
+        <CardDescription>登入以追蹤您的節目</CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -68,11 +68,11 @@ export default function LoginForm() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
+                  <FormLabel>手機號碼</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="e.g., 555-123-4567" {...field} className="pl-10" disabled={isSubmitting} />
+                      <Input placeholder="例如：0912-345-678" {...field} className="pl-10" disabled={isSubmitting} />
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -83,7 +83,7 @@ export default function LoginForm() {
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isSubmitting ? "Logging in..." : "Login"}
+              {isSubmitting ? "登入中..." : "登入"}
             </Button>
           </CardFooter>
         </form>

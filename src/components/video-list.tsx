@@ -28,7 +28,7 @@ export default function VideoList({ videos, onUpdateVideo, onDeleteVideo }: Vide
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search your videos..."
+          placeholder="搜尋您的影片..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10 w-full"
@@ -38,18 +38,18 @@ export default function VideoList({ videos, onUpdateVideo, onDeleteVideo }: Vide
       {videos.length === 0 && (
         <div className="text-center py-10 border-2 border-dashed rounded-lg">
           <Video className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-2 text-lg font-medium font-headline">No videos tracked</h3>
+          <h3 className="mt-2 text-lg font-medium font-headline">尚未追蹤任何影片</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add a video above to start tracking your progress.
+            在上方新增影片以開始追蹤您的進度。
           </p>
         </div>
       )}
 
       {videos.length > 0 && filteredVideos.length === 0 && (
         <div className="text-center py-10">
-          <h3 className="text-lg font-medium font-headline">No results found</h3>
+          <h3 className="text-lg font-medium font-headline">找不到結果</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Try a different search term.
+            請嘗試不同的搜尋詞。
           </p>
         </div>
       )}

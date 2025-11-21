@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Header from "@/components/header";
 
 export const metadata: Metadata = {
-  title: "Dashboard | WatchTrack",
+  title: "儀表板 | WatchTrack",
 };
 
 export default function DashboardLayout({
