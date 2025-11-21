@@ -21,7 +21,7 @@ import { updatePassword, AuthError } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "./ui/separator";
 import type { VideoProgress } from "@/lib/types";
-import { collection, writeBatch, query, where, getDocs, doc } from "firebase/firestore";
+import { collection, writeBatch, query, where, getDocs, doc, serverTimestamp } from "firebase/firestore";
 
 const passwordFormSchema = z.object({
     newPassword: z.string().min(6, "新密碼至少需要6個字元。"),
@@ -32,7 +32,7 @@ const passwordFormSchema = z.object({
 });
 
 type AccountSettingsProps = {
-    videos: Omit<VideoProgress, 'id' | 'userId'>[];
+    videos: VideoProgress[];
 };
 
 export default function AccountSettings({ videos }: AccountSettingsProps) {
@@ -120,7 +120,7 @@ export default function AccountSettings({ videos }: AccountSettingsProps) {
             if (typeof text !== 'string') {
                  throw new Error("無法讀取檔案內容。");
             }
-            const importedData: Omit<VideoProgress, 'id' | 'userId'>[] = JSON.parse(text);
+            const importedData: Omit<VideoProgress, 'id' | 'userId' | 'createdAt'>[] = JSON.parse(text);
 
             if (!Array.isArray(importedData)) {
                 throw new Error("檔案格式不正確，應為一個陣列。");
@@ -132,7 +132,6 @@ export default function AccountSettings({ videos }: AccountSettingsProps) {
             let updateCount = 0;
             let addCount = 0;
 
-            // Process items sequentially to avoid race conditions with getDocs
             for (const item of importedData) {
                 if (typeof item.name !== 'string' || typeof item.episode !== 'number') {
                     console.warn("略過格式不符的項目:", item);
@@ -142,14 +141,12 @@ export default function AccountSettings({ videos }: AccountSettingsProps) {
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
-                    // Update existing
                     const docToUpdate = querySnapshot.docs[0].ref;
                     batch.update(docToUpdate, { episode: item.episode });
                     updateCount++;
                 } else {
-                    // Add new
                     const newDocRef = doc(userVideosRef);
-                    batch.set(newDocRef, { ...item, userId: user.uid });
+                    batch.set(newDocRef, { ...item, userId: user.uid, createdAt: serverTimestamp() });
                     addCount++;
                 }
             }
@@ -160,7 +157,6 @@ export default function AccountSettings({ videos }: AccountSettingsProps) {
                 title: "匯入成功！",
                 description: `新增了 ${addCount} 筆，更新了 ${updateCount} 筆影片進度。頁面將會自動重新整理。`,
             });
-            // Simple way to refresh data is to reload the page
             window.location.reload();
 
         } catch (error: any) {
@@ -172,7 +168,6 @@ export default function AccountSettings({ videos }: AccountSettingsProps) {
             });
         } finally {
             setIsImporting(false);
-            // Reset file input
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }

@@ -74,7 +74,7 @@ export default function Header() {
                   管理您的帳號資訊、密碼與資料。
                 </DialogDescription>
               </DialogHeader>
-              <ScrollArea className="max-h-[70vh] py-4 pr-6">
+              <ScrollArea className="py-4 pr-6 max-h-[70vh]">
                 <AccountSettings videos={videos || []} />
               </ScrollArea>
             </DialogContent>
