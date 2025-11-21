@@ -5,7 +5,7 @@ import VideoEntryForm from "@/components/video-entry-form";
 import VideoList from "@/components/video-list";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc, serverTimestamp, writeBatch, query, where, getDocs } from "firebase/firestore";
-import { Loader2, Import } from "lucide-react";
+import { Loader2, Import, Film } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -147,11 +147,25 @@ export default function DashboardPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         ) : (
+          <>
+            {videos && videos.length > 0 && (
+              <div className="flex items-center justify-between rounded-lg border bg-card p-4">
+                <div className="flex items-center gap-3">
+                  <Film className="h-6 w-6 text-primary" />
+                  <h2 className="font-headline text-xl font-semibold">我的影片清單</h2>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-primary">{videos.length}</p>
+                  <p className="text-xs text-muted-foreground">個影片</p>
+                </div>
+              </div>
+            )}
            <VideoList
               videos={videos || []}
               onUpdateVideo={handleUpdateVideo}
               onDeleteVideo={handleDeleteVideo}
             />
+          </>
         )}
       </div>
     </div>
