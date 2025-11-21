@@ -35,23 +35,19 @@ export default function DashboardPage() {
     
     const q = query(videosCollectionRef, where("name", "==", name));
 
-    try {
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-            // Update existing video
-            const videoDoc = querySnapshot.docs[0];
-            handleUpdateVideo(videoDoc.id, { episode });
-        } else {
-            // Add new video
-            addDocumentNonBlocking(videosCollectionRef, {
-                name,
-                episode,
-                userId: user.uid,
-                createdAt: serverTimestamp()
-            });
-        }
-    } catch (error) {
-        console.error("Error handling video:", error);
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+        // Update existing video
+        const videoDoc = querySnapshot.docs[0];
+        handleUpdateVideo(videoDoc.id, { episode });
+    } else {
+        // Add new video
+        addDocumentNonBlocking(videosCollectionRef, {
+            name,
+            episode,
+            userId: user.uid,
+            createdAt: serverTimestamp()
+        });
     }
   };
 
