@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,6 +27,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
+// ** 功能開關 **
+// 設定為 true 來顯示「刪除所有影片」按鈕，設定為 false 來隱藏它。
+const ENABLE_DELETE_ALL = true;
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -137,32 +141,34 @@ export default function DashboardPage() {
                     <p className="text-2xl font-bold text-primary">{videos.length}</p>
                     <p className="text-xs text-muted-foreground">個影片</p>
                   </div>
-                   <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="icon" disabled={isDeletingAll}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>您確定要刪除所有進度嗎？</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          這個操作將會永久刪除您所有的影片追蹤記錄，而且無法復原。您確定要繼續嗎？
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>取消</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleDeleteAllVideos}
-                          disabled={isDeletingAll}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          {isDeletingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                          確定刪除
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  {ENABLE_DELETE_ALL && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="icon" disabled={isDeletingAll}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>您確定要刪除所有進度嗎？</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            這個操作將會永久刪除您所有的影片追蹤記錄，而且無法復原。您確定要繼續嗎？
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>取消</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeleteAllVideos}
+                            disabled={isDeletingAll}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            {isDeletingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            確定刪除
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
             )}
