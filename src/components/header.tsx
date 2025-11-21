@@ -67,14 +67,14 @@ export default function Header() {
                 <Settings className="h-5 w-5" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[480px] grid-rows-[auto_minmax(0,1fr)] max-h-[90vh] flex flex-col">
+            <DialogContent className="sm:max-w-[480px] max-h-[90vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>帳號設定</DialogTitle>
                 <DialogDescription>
                   管理您的帳號資訊、密碼與資料。
                 </DialogDescription>
               </DialogHeader>
-              <ScrollArea className="pr-6 -mr-6">
+              <ScrollArea className="pr-6 -mr-6 flex-grow">
                 <AccountSettings videos={videos || []} />
               </ScrollArea>
             </DialogContent>
