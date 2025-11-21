@@ -2,9 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clapperboard, LogOut } from "lucide-react";
+import { Clapperboard, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/firebase";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import ChangePasswordForm from "./change-password-form";
 
 export default function Header() {
   const router = useRouter();
@@ -25,6 +34,27 @@ export default function Header() {
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="帳號設定"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>帳號設定</DialogTitle>
+                <DialogDescription>
+                  在這裡變更您的密碼。
+                </DialogDescription>
+              </DialogHeader>
+              <ChangePasswordForm />
+            </DialogContent>
+          </Dialog>
+
           <Button
             variant="ghost"
             size="icon"
