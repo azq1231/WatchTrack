@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import VideoEntryForm from "@/components/video-entry-form";
 import VideoList from "@/components/video-list";
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, doc, serverTimestamp, query, where, getDocs, writeBatch } from "firebase/firestore";
 import { Loader2, Film, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -27,10 +27,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-// ** 功能開關 **
-// 設定為 true 來顯示「刪除所有影片」按鈕，設定為 false 來隱藏它。
-const ENABLE_DELETE_ALL = true;
-
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
@@ -44,6 +40,11 @@ export default function DashboardPage() {
     }
   }, [isUserLoading, user, router]);
 
+  // Firestore reference for the feature flag
+  const featureConfigRef = useMemoFirebase(() =>
+    firestore ? doc(firestore, 'config', 'features') : null
+  , [firestore]);
+  const { data: featureConfig, isLoading: isLoadingFeatures } = useDoc(featureConfigRef);
 
   const videosCollectionRef = useMemoFirebase(() =>
     user ? collection(firestore, 'users', user.uid, 'videos') : null
@@ -110,6 +111,7 @@ export default function DashboardPage() {
     }
   };
   
+  const isDeleteAllEnabled = featureConfig?.isDeleteAllEnabled === true;
 
   if (isUserLoading || !user) {
     return (
@@ -141,7 +143,7 @@ export default function DashboardPage() {
                     <p className="text-2xl font-bold text-primary">{videos.length}</p>
                     <p className="text-xs text-muted-foreground">個影片</p>
                   </div>
-                  {ENABLE_DELETE_ALL && (
+                  {isDeleteAllEnabled && !isLoadingFeatures && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive" size="icon" disabled={isDeletingAll}>
