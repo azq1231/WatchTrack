@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import VideoEntryForm from "@/components/video-entry-form";
 import VideoList from "@/components/video-list";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch, setDoc } from "firebase/firestore";
 import { Loader2, Import } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,18 @@ export default function DashboardPage() {
 
   const { data: videos, isLoading: isLoadingVideos } = useCollection(videosCollectionRef);
 
+  const ensureUserDocument = async () => {
+    if (!user || !firestore) return;
+    const userDocRef = doc(firestore, "users", user.uid);
+    // This will create the document if it doesn't exist, or do nothing if it does.
+    // It's a non-destructive way to ensure the user document is in place.
+    await setDoc(userDocRef, { id: user.uid, email: user.email }, { merge: true });
+  };
+
   const handleAddVideo = async (name: string, episode: number) => {
     if (!user || !videosCollectionRef) return;
+    
+    await ensureUserDocument();
 
     const existingVideo = videos?.find(v => v.name.toLowerCase() === name.toLowerCase());
 
@@ -58,6 +68,7 @@ export default function DashboardPage() {
 
     setIsImporting(true);
     try {
+      await ensureUserDocument();
       const batch = writeBatch(firestore);
       
       seedData.forEach(video => {

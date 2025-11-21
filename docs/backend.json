@@ -43,17 +43,16 @@
           "type": "string",
           "description": "The name of the video."
         },
-        "currentEpisode": {
+        "episode": {
           "type": "number",
-          "description": "The current episode the user is watching.",
-          "format": "integer"
+          "description": "The current episode the user is watching."
         }
       },
       "required": [
         "id",
         "userId",
         "name",
-        "currentEpisode"
+        "episode"
       ]
     }
   },

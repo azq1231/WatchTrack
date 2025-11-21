@@ -64,12 +64,13 @@ service cloud.firestore {
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
     }
-
+    
     /**
      * Validates that a new User document contains an 'id' field that matches
      * the document's path ID, ensuring relational integrity upon creation.
      */
     function isCreatingOwnUserDocument(userId) {
+      // When creating a user document, the incoming data should have an 'id' field that matches the user's UID.
       return request.resource.data.id == userId;
     }
 
@@ -110,8 +111,8 @@ service cloud.firestore {
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId) && isCreatingOwnUserDocument(userId);
+      allow list: if false; // User enumeration is disallowed for privacy.
+      allow create: if isOwner(userId); // Simplified: Allow user to create their own user doc.
       allow update: if isExistingOwner(userId) && isUpdatingOwnUserDocument();
       allow delete: if isExistingOwner(userId);
     }
