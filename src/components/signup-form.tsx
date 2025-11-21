@@ -55,7 +55,8 @@ export default function SignupForm() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     setError(null);
-    const email = `${values.phone}@${EMAIL_DOMAIN}`;
+    const normalizedPhone = values.phone.replace(/\D/g, "");
+    const email = `${normalizedPhone}@${EMAIL_DOMAIN}`;
 
     try {
       await createUserWithEmailAndPassword(auth, email, values.password);
