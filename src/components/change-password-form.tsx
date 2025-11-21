@@ -60,14 +60,8 @@ export default function ChangePasswordForm() {
       form.reset();
     } catch (updateError) {
       const authError = updateError as AuthError;
-      // In this specific dev environment, we bypass the "requires-recent-login" error
-      // as re-authentication is complex without a proper password flow.
       if (authError.code === 'auth/requires-recent-login') {
-        toast({
-            title: "成功！ (模擬)",
-            description: "您的密碼已成功更新。在正式環境中，您可能需要重新登入。",
-        });
-        form.reset();
+         setError("此為敏感操作，請重新登入後再試。");
       } else {
         console.error("Password update failed", updateError);
         setError("密碼更新失敗，請稍後再試。");
