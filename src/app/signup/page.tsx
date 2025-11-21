@@ -1,9 +1,9 @@
-import LoginForm from '@/components/login-form';
+import SignupForm from '@/components/signup-form';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const loginBg = PlaceHolderImages.find((img) => img.id === 'login-background');
 
   return (
@@ -18,11 +18,11 @@ export default function LoginPage() {
           data-ai-hint={loginBg.imageHint}
         />
       )}
-      <LoginForm />
+      <SignupForm />
       <div className="mt-4 text-center text-sm text-primary-foreground">
-        還沒有帳號嗎？{' '}
-        <Link href="/signup" className="underline hover:text-primary-foreground/80">
-          註冊
+        已經有帳號了嗎？{' '}
+        <Link href="/" className="underline hover:text-primary-foreground/80">
+          登入
         </Link>
       </div>
     </main>

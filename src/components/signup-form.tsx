@@ -25,9 +25,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useAuth, useUser } from "@/firebase";
+import { useAuth } from "@/firebase";
 import {
-  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   AuthError,
   AuthErrorCodes,
 } from "firebase/auth";
@@ -39,12 +39,11 @@ const formSchema = z.object({
 
 const EMAIL_DOMAIN = "watchtrack.app";
 
-export default function LoginForm() {
+export default function SignupForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const auth = useAuth();
-  const { user, isUserLoading } = useUser();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,36 +59,21 @@ export default function LoginForm() {
     const email = `${values.phone}@${EMAIL_DOMAIN}`;
 
     try {
-      await signInWithEmailAndPassword(auth, email, values.password);
+      await createUserWithEmailAndPassword(auth, email, values.password);
       router.push("/dashboard");
-    } catch (signInError) {
-      console.error("Login failed", signInError);
-      const authError = signInError as AuthError;
-      if (authError.code === AuthErrorCodes.INVALID_PASSWORD || authError.code === AuthErrorCodes.USER_NOT_FOUND || authError.code === 'auth/invalid-credential') {
-        setError("登入失敗，請檢查您的電話號碼和密碼。");
+    } catch (signUpError) {
+      console.error("Sign-up failed:", signUpError);
+      const authError = signUpError as AuthError;
+      if (authError.code === AuthErrorCodes.EMAIL_EXISTS) {
+        setError("這個手機號碼已經被註冊了。");
+      } else if (authError.code === AuthErrorCodes.WEAK_PASSWORD) {
+        setError("密碼強度不足，請使用至少6個字元。");
       } else {
-        setError("登入時發生無法預期的錯誤，請稍後再試。");
+        setError("註冊時發生無法預期的錯誤，請稍後再試。");
       }
       setIsSubmitting(false);
     }
   };
-  
-  if (isUserLoading) {
-    return (
-        <div className="flex items-center justify-center min-h-screen">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-    );
-  }
-
-  if (user) {
-      router.replace('/dashboard');
-      return (
-        <div className="flex items-center justify-center min-h-screen">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-      );
-  }
 
   return (
     <Card className="w-full max-w-sm bg-card/80 backdrop-blur-sm animate-in fade-in-0 zoom-in-95">
@@ -98,7 +82,7 @@ export default function LoginForm() {
             <Clapperboard className="h-8 w-8 text-primary" />
             <CardTitle className="font-headline text-3xl">WatchTrack</CardTitle>
         </div>
-        <CardDescription>登入以追蹤您的節目</CardDescription>
+        <CardDescription>建立您的帳號</CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -128,7 +112,7 @@ export default function LoginForm() {
                   <FormControl>
                     <div className="relative">
                       <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input type="password" placeholder="******" {...field} className="pl-10" disabled={isSubmitting} />
+                      <Input type="password" placeholder="至少6個字元" {...field} className="pl-10" disabled={isSubmitting} />
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -140,7 +124,7 @@ export default function LoginForm() {
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isSubmitting ? "登入中..." : "登入"}
+              {isSubmitting ? "註冊中..." : "註冊"}
             </Button>
           </CardFooter>
         </form>
