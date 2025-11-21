@@ -19,9 +19,9 @@ export default function SignupPage() {
         />
       )}
       <SignupForm />
-      <div className="mt-4 text-center text-sm text-primary-foreground">
+      <div className="mt-4 text-center text-sm text-slate-200">
         已經有帳號了嗎？{' '}
-        <Link href="/" className="underline hover:text-primary-foreground/80">
+        <Link href="/" className="underline hover:text-slate-300">
           登入
         </Link>
       </div>
