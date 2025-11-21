@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import VideoEntryForm from "@/components/video-entry-form";
 import VideoList from "@/components/video-list";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -23,6 +23,13 @@ export default function DashboardPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isImporting, setIsImporting] = useState(false);
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.replace('/');
+    }
+  }, [isUserLoading, user, router]);
+
 
   const videosCollectionRef = useMemoFirebase(() =>
     user ? collection(firestore, 'users', user.uid, 'videos') : null
@@ -98,16 +105,7 @@ export default function DashboardPage() {
   };
 
 
-  if (isUserLoading) {
-    return (
-        <div className="flex h-screen items-center justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-    );
-  }
-
-  if (!user) {
-    router.replace('/');
+  if (isUserLoading || !user) {
     return (
         <div className="flex h-screen items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
