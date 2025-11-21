@@ -21,7 +21,7 @@ import { updatePassword, AuthError } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "./ui/separator";
 import type { VideoProgress } from "@/lib/types";
-import { collection, writeBatch, query, where, getDocs } from "firebase/firestore";
+import { collection, writeBatch, query, where, getDocs, doc } from "firebase/firestore";
 
 const passwordFormSchema = z.object({
     newPassword: z.string().min(6, "新密碼至少需要6個字元。"),
@@ -183,7 +183,7 @@ export default function AccountSettings({ videos }: AccountSettingsProps) {
 
 
   return (
-    <div className="grid gap-6 py-4">
+    <div className="grid gap-6">
         {/* Data Management Section */}
         <div className="space-y-4">
             <h4 className="font-medium">資料管理</h4>
