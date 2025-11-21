@@ -26,15 +26,25 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth, useUser } from "@/firebase";
-import { signInAnonymously } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  AuthError,
+  AuthErrorCodes,
+} from "firebase/auth";
 
 const formSchema = z.object({
   phone: z.string().min(10, "請輸入有效的手機號碼。"),
 });
 
+// A constant, hidden password for development purposes.
+const DEV_PASSWORD = "dev-password-for-testing";
+const EMAIL_DOMAIN = "watchtrack.app";
+
 export default function LoginForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
 
@@ -47,17 +57,30 @@ export default function LoginForm() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
+    setError(null);
+    const email = `${values.phone}@${EMAIL_DOMAIN}`;
+
     try {
-      // In a real app, you might want to associate the phone number
-      // with the anonymous user profile, but for now, we just sign in.
-      if (!user) {
-        await signInAnonymously(auth);
-      }
+      // Try to sign in first.
+      await signInWithEmailAndPassword(auth, email, DEV_PASSWORD);
       router.push("/dashboard");
-    } catch (error) {
-      console.error("Login failed", error);
-      // You could show a toast message here
-      setIsSubmitting(false);
+    } catch (signInError) {
+      // If the user does not exist, create a new one.
+      if ((signInError as AuthError).code === AuthErrorCodes.USER_DELETED) {
+         try {
+           await createUserWithEmailAndPassword(auth, email, DEV_PASSWORD);
+           router.push("/dashboard");
+         } catch (signUpError) {
+            console.error("Sign-up failed after sign-in attempt:", signUpError);
+            setError("登入時發生無法預期的錯誤，請稍後再試。");
+            setIsSubmitting(false);
+         }
+      } else {
+        // Handle other sign-in errors
+        console.error("Login failed", signInError);
+        setError("登入失敗，請檢查您的電話號碼並重試。");
+        setIsSubmitting(false);
+      }
     }
   };
   
@@ -106,6 +129,7 @@ export default function LoginForm() {
                 </FormItem>
               )}
             />
+            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={isSubmitting}>
