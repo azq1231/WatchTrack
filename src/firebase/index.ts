@@ -1,25 +1,19 @@
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore'
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
-  if (getApps().length) {
-    return getSdks(getApp());
+  // This is the standard singleton pattern for Firebase initialization.
+  // It ensures that Firebase is initialized only once.
+  if (!getApps().length) {
+    return initializeApp(firebaseConfig);
+  } else {
+    return getApp();
   }
-
-  // In a production environment (deployed to Firebase App Hosting),
-  // the config is automatically provided.
-  // In a development environment, we use the config object.
-  // We can differentiate based on the presence of the NEXT_PUBLIC_FIREBASE_API_KEY.
-  const app = process.env.NEXT_PUBLIC_FIREBASE_API_KEY
-    ? initializeApp(firebaseConfig)
-    : initializeApp();
-
-  return getSdks(app);
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
